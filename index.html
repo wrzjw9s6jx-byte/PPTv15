@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Past Paper Tracker</title>
+<meta name="theme-color" content="#0a0b10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Papers">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="color-scheme" content="dark">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+–bg:#0a0b10; –bg-1:#10121a; –bg-2:#171a24; –bg-3:#1f222e; –bg-4:#2a2e3c;
+–line:#202434; –line-2:#2c3142; –line-3:#3a4058;
+–text:#f1ede2; –text-2:#cac8be; –text-3:#8a8d9c; –muted:#5d6175; –faint:#383c50;
+–accent:#d4b87a; –accent-2:#b89c68;
+–blue:#88a4f5; –green:#6ed4a0; –red:#ed7878; –yellow:#edc870; –purple:#b58fde; –orange:#e8a45d;
+–r-sm:8px; –r:12px; –r-lg:16px; –r-xl:22px;
+–s-1:0 1px 2px rgba(0,0,0,.4); –s-2:0 4px 14px rgba(0,0,0,.4); –s-3:0 12px 32px rgba(0,0,0,.5); –s-4:0 24px 60px rgba(0,0,0,.65);
+–t:.18s ease-out;
+–serif:“Charter”,“Iowan Old Style”,“Palatino”,“Georgia”,serif;
+–sans:-apple-system,BlinkMacSystemFont,“SF Pro Display”,“SF Pro Text”,“Inter”,“Helvetica Neue”,sans-serif;
+–mono:“SF Mono”,ui-monospace,Monaco,Consolas,monospace;
+}
+
+html,body{background:#0a0b10;min-height:100%;-webkit-text-size-adjust:100%}
+body{
+color:#f1ede2;font-family:-apple-system,BlinkMacSystemFont,“SF Pro Display”,“Inter”,“Helvetica Neue”,sans-serif;
+-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+font-size:15px;line-height:1.55;letter-spacing:-.005em;
+}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2c3142;border-radius:3px}
+
+.app{max-width:1080px;margin:0 auto;padding:0 1rem 5rem}
+@media(min-width:768px){body{font-size:15.5px}.app{padding:0 1.6rem 7rem}}
+@media(min-width:1024px){body{font-size:16px}.app{padding:0 2rem 7rem;max-width:1180px}}
+
+.topbar{padding:1rem 0 .9rem;border-bottom:1px solid var(–line);margin-bottom:1.4rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem}
+.brand{display:flex;flex-direction:column;gap:.15rem;min-width:0;flex:1}
+.brand h1{font-family:var(–serif);font-size:1.15rem;font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(–text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(min-width:768px){.brand h1{font-size:1.3rem}}
+.save-pill{display:inline-flex;align-items:center;gap:.32rem;font-size:.62rem;color:var(–green);font-weight:500;letter-spacing:.04em}
+.save-pill::before{content:’’;width:5px;height:5px;border-radius:50%;background:var(–green);box-shadow:0 0 6px var(–green)}
+
+.topbar-actions{display:flex;gap:.4rem;flex-shrink:0}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:var(–sans);font-size:.78rem;font-weight:500;letter-spacing:-.005em;line-height:1;padding:.6rem 1rem;border-radius:var(–r-sm);border:1px solid var(–line-3);background:var(–bg-2);color:var(–text);cursor:pointer;white-space:nowrap;min-height:38px;-webkit-appearance:none;appearance:none;transition:border-color var(–t),background var(–t),color var(–t)}
+.btn:hover{border-color:var(–accent-2);background:var(–bg-3)}
+.btn-primary{background:linear-gradient(180deg,var(–accent) 0%,var(–accent-2) 100%);color:#15110a;border-color:var(–accent);font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),var(–s-1)}
+.btn-primary:hover{background:linear-gradient(180deg,#dec188,var(–accent));border-color:var(–accent)}
+.btn-danger{color:var(–red);border-color:rgba(237,120,120,.3);background:rgba(237,120,120,.08)}
+.btn-danger:hover{background:rgba(237,120,120,.15);border-color:var(–red)}
+.btn-icon{padding:.5rem;min-width:38px;font-size:1rem;line-height:1;color:var(–text-2)}
+.btn-icon:hover{color:var(–text)}
+.btn-sm{padding:.4rem .7rem;font-size:.72rem;min-height:32px}
+.btn-xs{padding:.28rem .55rem;font-size:.68rem;min-height:28px}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+
+.btn-trash{width:30px;height:30px;border-radius:8px;background:transparent;border:1px solid transparent;color:var(–muted);cursor:pointer;-webkit-appearance:none;padding:0;flex-shrink:0;transition:all var(–t);display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1}
+.btn-trash:hover{color:var(–red);background:rgba(237,120,120,.12);border-color:rgba(237,120,120,.3)}
+
+.tabs{display:flex;gap:.3rem;padding:.3rem;background:var(–bg-1);border:1px solid var(–line-2);border-radius:var(–r-lg);margin-bottom:1.4rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;font-family:var(–sans);font-size:.8rem;font-weight:600;padding:.7rem 1rem;border-radius:var(–r-sm);border:1px solid transparent;background:transparent;color:var(–text-3);cursor:pointer;white-space:nowrap;-webkit-appearance:none;transition:all var(–t);min-height:40px}
+.tab:hover{color:var(–text-2)}
+.tab.on{background:var(–bg-3);color:var(–text);border-color:var(–line-3);box-shadow:var(–s-1)}
+.tab-count{font-size:.66rem;color:var(–text-3);background:var(–bg-4);padding:.1rem .4rem;border-radius:99px;margin-left:.45rem;font-family:var(–mono);font-weight:600}
+.tab.on .tab-count{background:var(–accent);color:#15110a}
+
+.panel{display:none}
+.panel.on{display:block}
+
+.intro{margin-bottom:1.5rem}
+.intro-eyebrow{font-size:.6rem;text-transform:uppercase;letter-spacing:.18em;color:var(–text-3);font-weight:700;margin-bottom:.5rem}
+.intro-title{font-family:var(–serif);font-size:1.7rem;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin-bottom:.4rem}
+@media(min-width:768px){.intro-title{font-size:2rem}}
+.intro-title em{font-style:normal;background:linear-gradient(135deg,#f5e9c8 10%,#d4b87a 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.intro-sub{font-size:.88rem;color:var(–text-3);max-width:560px;line-height:1.55}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:1.5rem}
+@media(min-width:560px){.stats{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:768px){.stats{gap:.85rem}}
+.stat{background:var(–bg-1);border:1px solid var(–line-2);border-radius:var(–r-lg);padding:1rem 1.1rem}
+.stat-lbl{font-size:.55rem;text-transform:uppercase;letter-spacing:.13em;color:var(–text-3);margin-bottom:.5rem;font-weight:700}
+.stat-val{font-family:var(–serif);font-size:1.6rem;font-weight:700;line-height:1;letter-spacing:-.025em;font-variant-numeric:tabular-nums}
+@media(min-width:768px){.stat{padding:1.15rem 1.25rem}.stat-val{font-size:1.85rem}}
+.c-accent{color:var(–accent)}.c-green{color:var(–green)}.c-yellow{color:var(–yellow)}.c-blue{color:var(–blue)}
+
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin:1.6rem 0 .9rem}
+.section-head h2{font-family:var(–serif);font-size:1.05rem;font-weight:700;letter-spacing:-.015em;display:flex;align-items:center;gap:.55rem}
+.section-head h2::before{content:’’;width:3px;height:14px;background:var(–accent);border-radius:2px;display:inline-block}
+@media(min-width:768px){.section-head h2{font-size:1.15rem}}
+.section-head-sub{font-size:.7rem;color:var(–text-3);font-family:var(–mono)}
+
+.insight-card{background:var(–bg-1);border:1px solid var(–line-2);border-radius:var(–r-lg);padding:1.1rem 1.2rem;margin-bottom:.85rem}
+.insight-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;gap:.5rem}
+.insight-head h3{font-family:var(–sans);font-size:.62rem;color:var(–text-3);font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+.insight-empty{font-size:.78rem;color:var(–text-3);text-align:center;padding:1.4rem 1rem;font-style:italic;line-height:1.55}
+
+.priority-list{display:flex;flex-direction:column;gap:.45rem}
+.priority-item{display:flex;align-items:flex-start;gap:.65rem;padding:.7rem .8rem;background:var(–bg-2);border:1px solid var(–line-2);border-radius:var(–r);font-size:.8rem;line-height:1.4}
+.priority-item:hover{border-color:rgba(237,120,120,.35);background:var(–bg-3)}
+.priority-star{color:var(–accent);font-size:.85rem;flex-shrink:0;margin-top:.1rem}
+.priority-text{flex:1;min-width:0}
+.priority-title{font-weight:600;color:var(–text)}
+.priority-meta{font-size:.66rem;color:var(–text-3);margin-top:.15rem;display:flex;flex-wrap:wrap;gap:.35rem}
+.priority-meta .sep{color:var(–faint)}
+.priority-count{flex-shrink:0;font-size:.65rem;color:var(–red);font-weight:700;background:rgba(237,120,120,.12);border:1px solid rgba(237,120,120,.3);padding:.2rem .5rem;border-radius:99px;font-family:var(–mono)}
+
+.rank-list{display:flex;flex-direction:column;gap:.45rem}
+.rank-item{display:flex;align-items:center;gap:.7rem;padding:.65rem .8rem;background:var(–bg-2);border:1px solid var(–line-2);border-radius:var(–r);font-size:.82rem}
+.rank-pos{font-family:var(–mono);font-size:.7rem;font-weight:700;color:var(–text-3);width:18px;flex-shrink:0;text-align:center}
+.rank-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
+.rank-name{flex:1;font-weight:500}
+.rank-bar{flex:1;max-width:80px;height:4px;border-radius:2px;background:var(–bg-3);overflow:hidden;flex-shrink:0}
+.rank-bar-fill{height:100%;border-radius:2px;transition:width .8s ease}
+.rank-pct{font-family:var(–mono);font-size:.72rem;font-weight:700;font-variant-numeric:tabular-nums;width:40px;text-align:right;flex-shrink:0;color:var(–text-2)}
+
+/* Mistake breakdown bar */
+.mistake-bar{display:flex;align-items:center;gap:.4rem;font-size:.7rem;margin-top:.6rem;flex-wrap:wrap}
+.mistake-bar-track{flex:1;display:flex;height:8px;background:var(–bg-3);border-radius:4px;overflow:hidden;min-width:120px}
+.mb-seg{height:100%;transition:width .4s ease}
+.mb-careless{background:var(–yellow)}
+.mb-knowledge{background:var(–red)}
+.mb-time{background:var(–blue)}
+.mb-technique{background:var(–purple)}
+.mistake-legend{display:flex;flex-wrap:wrap;gap:.35rem .85rem;margin-top:.55rem;font-size:.65rem;color:var(–text-3)}
+.mistake-legend-item{display:inline-flex;align-items:center;gap:.32rem;font-family:var(–mono)}
+.mistake-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;display:inline-block}
+
+.filters{display:flex;gap:.32rem;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:1.1rem;padding-bottom:.15rem}
+.filters::-webkit-scrollbar{display:none}
+.fbtn{font-family:var(–sans);font-size:.72rem;font-weight:500;padding:.5rem 1rem;border-radius:99px;border:1px solid var(–line-2);background:transparent;color:var(–text-3);cursor:pointer;white-space:nowrap;-webkit-appearance:none;transition:all var(–t)}
+.fbtn:hover{color:var(–text-2);border-color:var(–line-3)}
+.fbtn.on{background:var(–bg-3);color:var(–text);border-color:var(–blue)}
+
+.cards{display:flex;flex-direction:column;gap:.85rem}
+@media(min-width:768px){.cards{gap:1rem}}
+.card{background:var(–bg-1);border:1px solid var(–line-2);border-radius:var(–r-lg);overflow:visible}
+.card.open{border-color:var(–line-3);box-shadow:var(–s-2)}
+.card-hdr{display:flex;align-items:center;gap:.85rem;padding:1.05rem 1.15rem}
+@media(min-width:768px){.card-hdr{padding:1.2rem 1.35rem}}
+.card-tap{flex:1;min-width:0;display:flex;align-items:center;gap:.85rem;cursor:pointer}
+.card-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px rgba(0,0,0,.4);display:inline-block}
+.card-info{min-width:0;flex:1}
+.card-name{font-family:var(–serif);font-size:1.1rem;font-weight:600;letter-spacing:-.015em;line-height:1.2;color:var(–text)}
+@media(min-width:768px){.card-name{font-size:1.22rem}}
+.card-meta{font-size:.66rem;color:var(–text-3);margin-top:.25rem;line-height:1.45;display:flex;flex-wrap:wrap;gap:.35rem;align-items:center}
+.card-meta .sep{color:var(–faint)}
+
+.card-right{display:flex;align-items:center;gap:.45rem;flex-shrink:0}
+.ring-pct-text{font-family:var(–mono);font-size:.72rem;font-weight:700;color:var(–accent);font-variant-numeric:tabular-nums;background:var(–bg-3);border:1px solid var(–line-3);padding:.35rem .55rem;border-radius:8px;min-width:48px;text-align:center}
+.chev{color:var(–muted);font-size:.72rem;padding:.4rem;transition:transform var(–t),color var(–t);flex-shrink:0;cursor:pointer}
+.chev.op{transform:rotate(180deg);color:var(–accent)}
+
+.bar-wrap{padding:0 1.15rem 1rem}
+@media(min-width:768px){.bar-wrap{padding:0 1.35rem 1.05rem}}
+.bar{height:3px;background:var(–bg-3);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;transition:width 1s ease}
+
+.card-body{padding:0 .55rem 1.1rem}
+@media(min-width:768px){.card-body{padding:0 .8rem 1.2rem}}
+.cs-head{display:flex;align-items:center;gap:.5rem;padding:.5rem .65rem .65rem;font-size:.6rem;color:var(–text-3);font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+.cs-head::before{content:’’;width:3px;height:12px;background:var(–accent);border-radius:2px;opacity:.6;display:inline-block}
+
+.papers{display:flex;flex-direction:column;gap:.5rem;padding:0 .4rem}
+@media(min-width:768px){.papers{gap:.6rem;padding:0 .55rem}}
+.paper{background:var(–bg-2);border:1px solid var(–line-2);border-radius:var(–r);padding:.85rem .95rem;display:flex;flex-direction:column;gap:.65rem}
+@media(min-width:768px){.paper{padding:.95rem 1.1rem}}
+.paper-row{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.paper-label{display:inline-flex;align-items:center;gap:.5rem;font-weight:600;font-size:.92rem;letter-spacing:-.01em;flex-shrink:0}
+.paper-label .yr{color:var(–text-3);font-weight:600;font-variant-numeric:tabular-nums;background:var(–bg-4);padding:.2rem .55rem;border-radius:6px;font-size:.72rem;font-family:var(–mono)}
+.paper-label .pno{color:var(–text)}
+
+.badge{display:inline-flex;align-items:center;gap:.32rem;font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:.3rem .7rem;border-radius:99px;cursor:pointer;border:1px solid transparent;white-space:nowrap;user-select:none;transition:all var(–t)}
+.b-ns{background:rgba(94,97,117,.14);color:var(–text-3);border-color:var(–line-2)}
+.b-ip{background:rgba(237,200,112,.1);color:var(–yellow);border-color:rgba(237,200,112,.3)}
+.b-dn{background:rgba(110,212,160,.1);color:var(–green);border-color:rgba(110,212,160,.3)}
+
+.score-wrap{display:inline-flex;align-items:center;gap:.45rem;margin-left:auto}
+.score-lbl{font-size:.6rem;color:var(–text-3);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.score-in{width:64px;background:var(–bg-3);border:1px solid var(–line-3);border-radius:7px;color:var(–text);font-size:.86rem;font-weight:600;font-variant-numeric:tabular-nums;font-family:var(–mono);padding:.36rem .42rem;text-align:center;-webkit-appearance:none;-moz-appearance:textfield}
+.score-in::-webkit-inner-spin-button,.score-in::-webkit-outer-spin-button{-webkit-appearance:none}
+.score-in:focus{outline:none;border-color:var(–blue);background:var(–bg-4)}
+
+/* Mistake type chips */
+.mistake-row{display:flex;flex-direction:column;gap:.4rem}
+.mistake-row-label{font-size:.6rem;color:var(–text-3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:.4rem}
+.mistake-row-label::before{content:’’;width:3px;height:10px;border-radius:2px;background:var(–orange);opacity:.7;display:inline-block}
+.mistake-chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.mchip{display:inline-flex;align-items:center;gap:.32rem;font-size:.7rem;font-weight:600;padding:.35rem .65rem;border-radius:6px;cursor:pointer;border:1px solid transparent;-webkit-appearance:none;background:transparent;color:var(–text-3);font-family:var(–sans);transition:all var(–t)}
+.mchip:hover{border-color:var(–line-3);color:var(–text-2)}
+.mchip-count{font-family:var(–mono);font-size:.65rem;font-weight:700;background:var(–bg-3);padding:.05rem .35rem;border-radius:4px;min-width:18px;text-align:center;line-height:1.4}
+.mchip.careless{background:rgba(237,200,112,.08);border-color:rgba(237,200,112,.25);color:var(–yellow)}
+.mchip.careless.has-count{background:rgba(237,200,112,.15);border-color:rgba(237,200,112,.45)}
+.mchip.careless .mchip-count{background:rgba(237,200,112,.2);color:var(–yellow)}
+.mchip.knowledge{background:rgba(237,120,120,.08);border-color:rgba(237,120,120,.25);color:var(–red)}
+.mchip.knowledge.has-count{background:rgba(237,120,120,.15);border-color:rgba(237,120,120,.45)}
+.mchip.knowledge .mchip-count{background:rgba(237,120,120,.2);color:var(–red)}
+.mchip.time{background:rgba(136,164,245,.08);border-color:rgba(136,164,245,.25);color:var(–blue)}
+.mchip.time.has-count{background:rgba(136,164,245,.15);border-color:rgba(136,164,245,.45)}
+.mchip.time .mchip-count{background:rgba(136,164,245,.2);color:var(–blue)}
+.mchip.technique{background:rgba(181,143,222,.08);border-color:rgba(181,143,222,.25);color:var(–purple)}
+.mchip.technique.has-count{background:rgba(181,143,222,.15);border-color:rgba(181,143,222,.45)}
+.mchip.technique .mchip-count{background:rgba(181,143,222,.2);color:var(–purple)}
+.mchip-icon{font-size:.78rem;line-height:1}
+
+/* Weak topics */
+.weak-section{display:flex;flex-direction:column;gap:.5rem}
+.weak-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.weak-head h4{font-size:.6rem;color:var(–text-3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:inline-flex;align-items:center;gap:.4rem}
+.weak-head h4::before{content:’’;width:3px;height:10px;border-radius:2px;background:var(–red);opacity:.7;display:inline-block}
+.weak-count{font-size:.6rem;color:var(–muted);font-family:var(–mono)}
+
+.wtags{display:flex;flex-wrap:wrap;gap:.35rem}
+.wtag{display:inline-flex;align-items:center;gap:.32rem;font-size:.7rem;background:rgba(237,120,120,.1);color:var(–red);border:1px solid rgba(237,120,120,.25);border-radius:6px;padding:.26rem .55rem;line-height:1.3;font-weight:500;cursor:pointer}
+.wtag.priority{background:rgba(237,120,120,.18);border-color:rgba(237,120,120,.5)}
+.wtag.priority::before{content:‘★’;margin-right:.15rem;font-size:.65rem;color:var(–accent)}
+.wtag-rm{background:none;border:none;color:inherit;cursor:pointer;font-size:.95rem;line-height:1;padding:0 .12rem;opacity:.55;-webkit-appearance:none}
+.wtag-rm:hover{opacity:1}
+
+.add-wt{display:flex;gap:.4rem;position:relative;align-items:center}
+.wt-in{flex:1;background:var(–bg-3);border:1px solid var(–line-3);border-radius:8px;color:var(–text);font-size:.8rem;padding:.5rem .7rem;-webkit-appearance:none;font-family:inherit}
+.wt-in:focus{outline:none;border-color:var(–red);background:var(–bg-4)}
+.wt-in::placeholder{color:var(–faint)}
+
+.sugg{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(–bg-2);border:1px solid var(–line-3);border-radius:var(–r);z-index:80;max-height:260px;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:var(–s-3)}
+.sugg-head{padding:.55rem .8rem;font-size:.55rem;color:var(–text-3);text-transform:uppercase;letter-spacing:.12em;font-weight:700;background:var(–bg-3);border-bottom:1px solid var(–line)}
+.sugg-item{padding:.75rem .85rem;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.025);cursor:pointer;-webkit-tap-highlight-color:rgba(136,164,245,.2);user-select:none;-webkit-user-select:none}
+.sugg-item:last-child{border-bottom:none}
+.sugg-item.is-active{background:var(–bg-4)}
+
+.empty-hint{text-align:center;padding:1.5rem 1rem;color:var(–text-3);font-size:.78rem;background:var(–bg-2);border:1px dashed var(–line-2);border-radius:var(–r);margin:0 .4rem}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);z-index:500;align-items:flex-end;justify-content:center;padding:0}
+.overlay.show{display:flex}
+@media(min-width:640px){.overlay{align-items:center;padding:1.5rem}}
+.modal{background:var(–bg-1);border:1px solid var(–line-3);border-radius:var(–r-xl) var(–r-xl) 0 0;padding:1.5rem 1.3rem 1.7rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:var(–s-4)}
+@media(min-width:640px){.modal{border-radius:var(–r-lg);padding:1.8rem}}
+.modal h2{font-family:var(–serif);font-size:1.25rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.5rem}
+.modal-sub{font-size:.85rem;color:var(–text-2);line-height:1.6;margin-bottom:1.3rem}
+.modal-foot{display:flex;gap:.55rem;justify-content:flex-end;margin-top:1.3rem;flex-wrap:wrap}
+
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(–text-3);margin-bottom:.42rem;font-weight:700}
+.field input,.field select,.field textarea{width:100%;background:var(–bg-2);border:1px solid var(–line-3);border-radius:var(–r);color:var(–text);font-size:1rem;padding:.75rem .95rem;-webkit-appearance:none;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(–accent-2);background:var(–bg-3)}
+.field input.err{border-color:var(–red)}
+.field textarea{min-height:90px;resize:vertical}
+
+.ptype-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem}
+.ptype{background:var(–bg-2);border:1px solid var(–line-3);border-radius:9px;color:var(–text-3);font-size:.78rem;padding:.75rem .4rem;text-align:center;cursor:pointer;-webkit-appearance:none;font-family:inherit;font-weight:600}
+.ptype.sel{border-color:var(–accent);color:var(–accent);background:rgba(212,184,122,.08)}
+
+.swatches{display:flex;gap:.55rem;flex-wrap:wrap}
+.swatch{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid transparent;box-shadow:var(–s-1)}
+.swatch.sel{border-color:var(–text);box-shadow:var(–s-2)}
+
+.confirm-step{font-size:.9rem;line-height:1.55;color:var(–text);padding:.95rem 1.05rem;margin-bottom:1rem;background:var(–bg-2);border:1px solid var(–line-2);border-radius:var(–r)}
+.confirm-step strong{color:var(–red);font-weight:700}
+.confirm-hint{font-size:.72rem;color:var(–text-3);margin-top:.6rem}
+.confirm-prog{display:flex;gap:.32rem;margin-bottom:1.2rem}
+.confirm-prog .step{flex:1;height:4px;background:var(–line-3);border-radius:99px}
+.confirm-prog .step.on{background:var(–red);box-shadow:0 0 8px var(–red)}
+.confirm-type{width:100%;background:var(–bg-2);border:1px solid var(–line-3);border-radius:var(–r);color:var(–text);font-size:1rem;padding:.75rem .95rem;-webkit-appearance:none;font-family:inherit}
+.confirm-type:focus{outline:none;border-color:var(–red)}
+
+.action-list{display:flex;flex-direction:column;gap:.55rem}
+.action-item{display:flex;align-items:center;gap:.85rem;padding:.95rem 1.1rem;background:var(–bg-2);border:1px solid var(–line-3);border-radius:var(–r);cursor:pointer;-webkit-appearance:none;color:var(–text);font-family:inherit;text-align:left;width:100%;font-size:.88rem}
+.action-item:hover{border-color:var(–accent-2);background:var(–bg-3)}
+.action-icon{font-size:1.25rem;flex-shrink:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(–bg-3);border-radius:9px}
+.action-main{flex:1;min-width:0}
+.action-title{font-weight:600;margin-bottom:.18rem}
+.action-desc{font-size:.72rem;color:var(–text-3);line-height:1.45}
+.action-arrow{color:var(–muted);font-size:.85rem;flex-shrink:0}
+
+.menu-btns{display:flex;flex-direction:column;gap:.55rem}
+.empty-state{text-align:center;padding:3rem 1.5rem 2rem;background:var(–bg-1);border:1px dashed var(–line-2);border-radius:var(–r-lg)}
+.empty-state h3{font-family:var(–serif);font-size:1.2rem;font-weight:700;letter-spacing:-.02em;color:var(–text);margin-bottom:.5rem}
+.empty-state p{font-size:.85rem;line-height:1.6;color:var(–text-3);margin-bottom:1rem}
+
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(180%);background:var(–bg-3);border:1px solid var(–line-3);border-radius:var(–r);padding:.78rem 1.25rem;font-size:.82rem;color:var(–text);box-shadow:var(–s-3);transition:transform .3s ease;z-index:700;max-width:90vw;font-weight:500}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:rgba(237,120,120,.5);color:var(–red)}
+
+@media(max-width:500px){.modal h2{font-size:1.15rem}.paper-row{gap:.5rem}.score-wrap{width:100%;margin-left:0;justify-content:flex-end;padding-top:.55rem;border-top:1px dashed var(–line-2)}}
+</style>
+
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <h1>Past Paper Tracker</h1>
+      <span class="save-pill" id="saveIndicator">Saved</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-icon" id="menuBtn" aria-label="Menu">☰</button>
+      <button class="btn btn-primary" id="addSubBtn">+ Subject</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="insights">Insights</button>
+    <button class="tab" data-tab="subjects">Subjects <span class="tab-count" id="tabSubCount">4</span></button>
+  </div>
+
+  <div class="panel on" id="panel-overview">
+    <div class="intro">
+      <div class="intro-eyebrow">A-Level Revision</div>
+      <h1 class="intro-title">Track every paper, <em>master every topic</em></h1>
+      <p class="intro-sub">Log scores, flag weaknesses, and tag exactly why each mistake was lost — so you know what to fix.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val c-accent" id="statTotal">0</div></div>
+      <div class="stat"><div class="stat-lbl">Done</div><div class="stat-val c-green" id="statDone">0</div></div>
+      <div class="stat"><div class="stat-lbl">In Progress</div><div class="stat-val c-yellow" id="statProg">0</div></div>
+      <div class="stat"><div class="stat-lbl">Avg %</div><div class="stat-val c-blue" id="statAvg">—</div></div>
+    </div>
+    <div class="section-head"><h2>Quick Insights</h2><span class="section-head-sub">tap Insights for full view</span></div>
+    <div id="overviewInsights"></div>
+  </div>
+
+  <div class="panel" id="panel-insights">
+    <div class="intro">
+      <div class="intro-eyebrow">Revision Dashboard</div>
+      <h1 class="intro-title">What to <em>revise next</em></h1>
+      <p class="intro-sub">Your priority topics, weakest subjects, and mistake patterns.</p>
+    </div>
+    <div class="insight-card"><div class="insight-head"><h3>Priority Topics</h3><span style="font-size:.62rem;color:var(--muted);font-family:var(--mono)" id="priorityCount">0 starred</span></div><div id="priorityList"></div></div>
+    <div class="insight-card"><div class="insight-head"><h3>Subjects By Performance</h3><span style="font-size:.62rem;color:var(--muted);font-family:var(--mono)">lowest avg first</span></div><div id="rankList"></div></div>
+    <div class="insight-card"><div class="insight-head"><h3>Mistake Type Breakdown</h3><span style="font-size:.62rem;color:var(--muted);font-family:var(--mono)" id="mistakeTotal">0 logged</span></div><div id="mistakeBreakdown"></div></div>
+    <div class="insight-card"><div class="insight-head"><h3>Most-Tagged Weaknesses</h3><span style="font-size:.62rem;color:var(--muted);font-family:var(--mono)">2+ occurrences</span></div><div id="frequentList"></div></div>
+  </div>
+
+  <div class="panel" id="panel-subjects">
+    <div class="filters">
+      <button class="fbtn on" data-f="all">All papers</button>
+      <button class="fbtn" data-f="completed">Done</button>
+      <button class="fbtn" data-f="in-progress">In progress</button>
+      <button class="fbtn" data-f="not-started">Not started</button>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="overlay" id="delOverlay"><div class="modal"><h2 id="delTitle">Delete Subject?</h2><div class="confirm-prog"><div class="step on" id="cs1"></div><div class="step" id="cs2"></div><div class="step" id="cs3"></div></div><div id="delBody"></div><div class="modal-foot"><button class="btn" id="delCancel">Cancel</button><button class="btn btn-danger" id="delNext">Continue</button></div></div></div>
+
+<div class="overlay" id="menuOverlay"><div class="modal">
+  <h2>Menu &amp; Backup</h2>
+  <p class="modal-sub">Back up regularly. Safari can clear browser data after weeks of inactivity.</p>
+  <div class="menu-btns">
+    <button class="btn btn-primary" id="exportBtn" style="width:100%">↓ Export Backup</button>
+    <button class="btn" id="copyBtn" style="width:100%">⧉ Copy to Clipboard</button>
+    <label for="importFile" class="btn" style="width:100%;cursor:pointer;margin:0">↑ Import Backup</label>
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+    <button class="btn" id="pasteBtn" style="width:100%">⧈ Paste from Clipboard</button>
+    <button class="btn btn-danger" id="resetBtn" style="width:100%;margin-top:.5rem">↺ Reset All Data</button>
+  </div>
+  <div style="font-size:.76rem;color:var(--text-2);line-height:1.6;padding:.95rem 1.05rem;background:var(--bg-2);border-radius:var(--r);border:1px solid var(--line-2);margin-top:1rem"><strong style="color:var(--text)">Privacy:</strong> Your data lives only on this device. Sharing this link gives others their own separate copy.</div>
+  <div class="modal-foot"><button class="btn" id="menuClose">Close</button></div>
+</div></div>
+
+<div class="overlay" id="addPaperOverlay"><div class="modal"><h2>Add Paper</h2><p class="modal-sub" id="addPaperSub"></p><div class="field"><label>Year</label><input type="number" id="apYear" inputmode="numeric" placeholder="2025"></div><div class="field"><label>Paper</label><div class="ptype-grid" id="apPapers"></div></div><div class="modal-foot"><button class="btn" id="apCancel">Cancel</button><button class="btn btn-primary" id="apSave">Add</button></div></div></div>
+
+<div class="overlay" id="addSubOverlay"><div class="modal"><h2>Add Subject</h2><div class="field"><label>Subject Name</label><input type="text" id="asName" placeholder="e.g. Biology"></div><div class="field"><label>Exam Board (optional)</label><select id="asBoard"><option value="">— custom —</option></select></div><div class="field" id="asCustomField" style="display:none"><label>Custom Board</label><input type="text" id="asCustom" placeholder="e.g. Edexcel Biology"></div><div class="field"><label>Years</label><div style="display:flex;gap:.55rem"><input type="number" id="asFrom" placeholder="From" inputmode="numeric" style="width:50%"><input type="number" id="asTo" placeholder="To" inputmode="numeric" style="width:50%"></div></div><div class="field"><label>Colour</label><div class="swatches" id="asSwatches"></div></div><div class="modal-foot"><button class="btn" id="asCancel">Cancel</button><button class="btn btn-primary" id="asSave">Add Subject</button></div></div></div>
+
+<div class="overlay" id="wActionOverlay"><div class="modal"><h2 id="wActionTitle">Weakness</h2><p class="modal-sub" id="wActionSub"></p><div class="action-list" id="wActionList"></div><div class="modal-foot"><button class="btn" id="wActionClose">Close</button></div></div></div>
+
+<div class="overlay" id="wNoteOverlay"><div class="modal"><h2>Add detail</h2><p class="modal-sub" id="wNoteSub"></p><div class="field"><label>Notes</label><textarea id="wNoteText" placeholder="e.g. Q5(b) — confused with moment arm direction"></textarea></div><div class="modal-foot"><button class="btn" id="wNoteCancel">Cancel</button><button class="btn btn-primary" id="wNoteSave">Save</button></div></div></div>
+
+<script>
+(function(){
+'use strict';
+
+var COLORS = ['#d4b87a','#88a4f5','#6ed4a0','#ed7878','#b58fde','#5fc4d0','#e8a45d','#e87da4'];
+
+// Mistake categories — careless / knowledge / time / technique
+var MISTAKE_TYPES = [
+  { id: 'careless',  label: 'Careless',  icon: '!',  desc: 'Silly errors, misread, sign flip' },
+  { id: 'knowledge', label: 'Knowledge', icon: '?',  desc: "Didn't know the content" },
+  { id: 'time',      label: 'Time',      icon: '⏱', desc: 'Ran out of time on the question' },
+  { id: 'technique', label: 'Technique', icon: '✎', desc: 'Wrong method, exam-skill issue' }
+];
+
+var BOARDS = {
+  'AQA Physics (7408)': {
+    papers: [{ id:'p1', label:'Paper 1' },{ id:'p2', label:'Paper 2' },{ id:'p3', label:'Paper 3' }],
+    topicsByPaper: {
+      'p1': ['Use of SI units & their prefixes','Limitation of physical measurements','Estimation of physical quantities','Constituents of the atom','Stable & unstable nuclei','Particles, antiparticles & photons','Particle interactions','Classification of particles','Quarks & antiquarks','Applications of conservation laws','The photoelectric effect','Collisions of electrons with atoms','Energy levels & photon emission','Wave-particle duality','Progressive waves','Longitudinal & transverse waves','Principle of superposition & stationary waves','Interference','Diffraction','Refraction at a plane surface','Scalars & vectors','Moments','Motion along a straight line','Projectile motion',"Newton's laws of motion",'Momentum','Work, energy & power','Conservation of energy','Bulk properties of solids','The Young modulus','Basics of electricity','Current-voltage characteristics','Resistivity','Circuits','Potential divider','Electromotive force & internal resistance','Alternating currents','Circular motion','Simple harmonic motion','SHM applied to mass-spring & pendulum','Forced vibrations & resonance'],
+      'p2': ['Thermal energy transfer','Ideal gases','Molecular kinetic theory model','Newton’s law of gravitation','Gravitational potential','Orbits of planets & satellites','Coulomb’s law (electric fields)','Electric potential','Capacitance','Capacitor charge & discharge','Magnetic flux density','Moving charges in magnetic fields','Electromagnetic induction','Alternators & transformers','Rutherford scattering','Alpha, beta & gamma radiation','Radioactive decay','Nuclear instability','Nuclear radius','Mass-energy equivalence (E=mc²)','Induced fission','Safety aspects of nuclear reactors'],
+      'p3': ['Practical skills & data analysis','Use of apparatus & techniques','Required practicals (planning)','Treatment of uncertainties','Log graphs & log-log plots','Error propagation','Discovery of the electron (Turning Points)','Wave-particle nature of light (Turning Points)','Special relativity (Turning Points)','Michelson-Morley experiment (Turning Points)','Time dilation & length contraction (Turning Points)','Mass-energy in relativity (Turning Points)','Cathode rays & Millikan oil-drop (Turning Points)','Astrophysics (Section 9 option)','Medical Physics (Section 10 option)','Engineering Physics (Section 11 option)','Electronics (Section 13 option)']
+    }
+  },
+  'AQA Maths (7357)': {
+    papers: [{ id:'p1', label:'Paper 1' },{ id:'p2', label:'Paper 2' },{ id:'p3', label:'Paper 3' }],
+    topicsByPaper: {
+      'p1': ['Proof by deduction','Proof by exhaustion','Proof by contradiction','Disproof by counter-example','Indices & surds','Quadratics & discriminant','Simultaneous equations','Inequalities (linear/quadratic)','Polynomials & factor theorem','Graphs of functions','Transformations of graphs','Partial fractions','Functions, inverse & composite','Modulus function','Equation of a straight line','Coordinate geometry of circles','Parametric equations','Arithmetic sequences & series','Geometric sequences & series','Sigma notation','Binomial expansion','Sine & cosine rules','Trigonometric identities','Trigonometric equations','Radians, arc length & sector area','Small angle approximations','Reciprocal & inverse trig functions','Exponential functions','Logarithms & laws','Natural logarithm (ln) & eˣ','Exponential growth & decay models','Differentiation from first principles','Chain, product & quotient rule','Implicit differentiation','Parametric differentiation','Stationary points & second derivatives','Concavity & inflection','Integration as reverse of differentiation','Integration by substitution','Integration by parts','Integration using partial fractions','Differential equations','Definite integrals & area','Newton-Raphson method','Trapezium rule','Iteration & change of sign','Vectors in 2D & 3D','Magnitude & direction','Position vectors','Vectors in mechanics & geometry'],
+      'p2': ['Quantities & units in mechanics','Working with vectors (mechanics)','Kinematics – constant acceleration','SUVAT equations','Kinematics – variable acceleration','Calculus in kinematics','Projectile motion',"Newton's first law","Newton's second law (F = ma)","Newton's third law",'Friction & coefficient of friction','Inclined planes','Connected particles & pulleys','Momentum & impulse','Moments & equilibrium'],
+      'p3': ['Sampling – populations & methods','Random & non-random sampling','Data presentation & interpretation','Measures of central tendency','Measures of spread','Outliers & data cleaning','Correlation & regression','Probability – mutually exclusive & independent','Conditional probability','Set notation, Venn diagrams & tree diagrams','Discrete probability distributions','Binomial distribution','Normal distribution','Approximation of binomial by normal','Hypothesis testing – binomial','Hypothesis testing – normal mean','Large data set (LDS)']
+    }
+  },
+  'OCR A Chemistry (H432)': {
+    papers: [{ id:'p1', label:'Paper 1' },{ id:'p2', label:'Paper 2' },{ id:'p3', label:'Paper 3' }],
+    topicsByPaper: {
+      'p1': ['Atomic structure & isotopes','Compounds, formulae & equations','Amount of substance & the mole','Acid-base reactions','Redox reactions & oxidation numbers','Electron configuration','Ionic bonding & lattice structures','Covalent bonding','Shapes of molecules & VSEPR','Electronegativity & polarity','Intermolecular forces (vdW, dipole, H-bond)','Metallic bonding','Periodicity & periodic trends','Group 2 & their reactions','Group 7 (halogens) & their reactions','Qualitative analysis (cation/anion tests)','Enthalpy changes (ΔH)',"Hess's law & enthalpy cycles",'Bond enthalpies','Reaction rates & collision theory','Catalysts (homogeneous & heterogeneous)','Boltzmann distribution','Chemical equilibrium (Kc)','Le Chatelier’s principle','Reaction rates – orders & rate equations','Rate constant (k) & Arrhenius','Rate-determining step','pH & strong/weak acids','Buffer solutions','Titration curves & indicators','Acid-base equilibria (Ka, Kw)','Lattice enthalpy & Born-Haber cycles','Enthalpy, entropy & free energy (ΔG)','Redox & electrode potentials','Electrochemical cells & fuel cells','Transition elements & properties','Complex ions & ligand substitution','Colour & redox of transition metals'],
+      'p2': ['Practical skills (planning, implementing, analysis)','Foundations – moles, equations, bonding (synoptic)','Basic organic chemistry – nomenclature & isomerism','Hydrocarbons – alkanes & combustion','Alkenes & E/Z isomerism','Alcohols & oxidation reactions','Haloalkanes – substitution & elimination','Organic synthesis routes','Analytical techniques – IR & MS overview','Aromatic compounds & benzene','Electrophilic substitution (nitration, halogenation, F-C)','Phenols','Carbonyl compounds (aldehydes & ketones)','Carboxylic acids & derivatives','Esters & hydrolysis','Acyl chlorides & anhydrides','Amines','Amino acids, proteins & condensation','Polymers (addition & condensation)','Optical isomerism & chirality','Chromatography (TLC, GC)','NMR spectroscopy (¹H & ¹³C)','IR spectroscopy','Mass spectrometry'],
+      'p3': ['Synoptic – physical chemistry','Synoptic – inorganic chemistry','Synoptic – organic chemistry','Synoptic – practical skills','Multi-step calculations','Application to unfamiliar contexts','Extended response (6-mark questions)']
+    }
+  },
+  'Eduqas Biology (A400)': {
+    papers: [{ id:'p1', label:'Component 1' },{ id:'p2', label:'Component 2' },{ id:'p3', label:'Component 3' }],
+    topicsByPaper: {
+      'p1': ['Core: Biological compounds (carbs, lipids, proteins)','Core: Cell structure & organisation','Core: Cell membranes & transport','Core: Enzymes (action, inhibition, factors)','Core: Nucleic acids (DNA, RNA, replication)','Importance of ATP','Photosynthesis – light-dependent stage','Photosynthesis – light-independent (Calvin)','Limiting factors of photosynthesis','Respiration – glycolysis','Respiration – link reaction & Krebs','Respiration – oxidative phosphorylation','Anaerobic respiration','Microbiology – bacterial growth & culture','Aseptic technique','Antibiotics & antimicrobials','Population size & growth curves','Ecosystems & energy flow','Gross & net primary productivity','Nutrient cycles (C, N)','Investigating populations','Succession','Human impact on biodiversity','Conservation','Climate & pollution effects'],
+      'p2': ['Core: Biological compounds','Core: Cell structure & organisation','Core: Cell membranes & transport','Core: Enzymes','Core: Nucleic acids','Classification & taxonomy','Phylogeny & evolutionary relationships','Biodiversity & measuring it (Simpson’s index)','Mitosis & cell cycle','Meiosis & genetic variation','Gametogenesis (spermatogenesis & oogenesis)','Fertilisation & implantation','Pregnancy & gestation','Plant reproductive structures','Pollination & fertilisation in plants','Seed formation & dispersal','Monohybrid inheritance','Dihybrid inheritance','Sex linkage','Codominance & multiple alleles','Linkage & crossing over','Chi-squared test','Continuous & discontinuous variation','Mutation – gene & chromosomal','Natural selection','Hardy-Weinberg principle','Speciation & isolation','Selective breeding','DNA profiling & sequencing','PCR & gel electrophoresis','Genetic engineering & GM organisms','Gene therapy','Genetic counselling'],
+      'p3': ['Core: Biological compounds','Core: Cell structure & organisation','Core: Cell membranes & transport','Core: Enzymes','Core: Nucleic acids','Gas exchange in single-celled organisms','Gas exchange in insects','Gas exchange in fish','Gas exchange in plants (stomata)','Gas exchange in humans (lungs & alveoli)','Mass transport in animals (heart structure & cardiac cycle)','Blood vessels & blood','Tissue fluid formation','Mass transport in plants – xylem & transpiration','Mass transport in plants – phloem & translocation','Modes of nutrition (autotrophs/heterotrophs)','Saprotrophic nutrition','Human digestive system','Absorption in the small intestine','Principles of homeostasis & negative feedback','Kidney structure & ultrafiltration','Selective reabsorption (loop of Henle)','Osmoregulation & ADH','Liver & detoxification','Nervous system structure (CNS, PNS)','Nerve impulses & action potentials','Synaptic transmission','Reflex arcs','Endocrine vs nervous coordination','Option A: Innate (non-specific) immunity','Option A: Adaptive (specific) immunity','Option A: Antibodies & antigens','Option A: Vaccination & herd immunity','Option A: Antibiotics & antibiotic resistance','Option A: Disease – pathogens & transmission','Option B: Skeletal structure & joints','Option B: Muscle structure & sliding filament','Option B: Antagonistic muscle pairs','Option B: Movement & locomotion','Option C: Brain structure & function','Option C: Vision & hearing','Option C: Innate & learned behaviour','Option C: Drugs & the nervous system']
+    }
+  }
+};
+var BOARD_KEYS = Object.keys(BOARDS);
+
+var SEED = [
+  { id:'phys', name:'Physics',   board:'AQA Physics (7408)',     color:'#88a4f5', yFrom:2017, yTo:2025 },
+  { id:'chem', name:'Chemistry', board:'OCR A Chemistry (H432)', color:'#6ed4a0', yFrom:2017, yTo:2025 },
+  { id:'math', name:'Maths',     board:'AQA Maths (7357)',        color:'#d4b87a', yFrom:2018, yTo:2025 },
+  { id:'biol', name:'Biology',   board:'Eduqas Biology (A400)',  color:'#b58fde', yFrom:2018, yTo:2025 }
+];
+
+function buildSeed(){
+  var out = {};
+  SEED.forEach(function(s){
+    var cfg = BOARDS[s.board];
+    out[s.id] = [];
+    for (var y = s.yFrom; y <= s.yTo; y++) {
+      cfg.papers.forEach(function(p){
+        out[s.id].push({ id: s.id+'_'+y+'_'+p.id, year: String(y), paperId: p.id, paperLabel: p.label, status: 'not-started', score: '', weakTopics: [], mistakes: { careless:0, knowledge:0, time:0, technique:0 } });
+      });
+    }
+  });
+  return out;
+}
+
+// ─── STORAGE ─────────────────────────
+var STORAGE_KEY = 'ppt15';
+var idb = null;
+var LS = {
+  get: function(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set: function(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
+};
+
+function openIDB(){
+  return new Promise(function(resolve){
+    try{
+      var req = indexedDB.open('ppt_db', 1);
+      req.onupgradeneeded = function(){ var db=req.result; if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv'); };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ resolve(null); };
+    }catch(e){ resolve(null); }
+  });
+}
+function idbSet(k,v){ if(!idb)return; try{ idb.transaction('kv','readwrite').objectStore('kv').put(v,k); }catch(e){} }
+function idbGet(k){ return new Promise(function(resolve){ if(!idb){ resolve(undefined); return; } try{ var req = idb.transaction('kv','readonly').objectStore('kv').get(k); req.onsuccess = function(){ resolve(req.result); }; req.onerror = function(){ resolve(undefined); }; }catch(e){ resolve(undefined); } }); }
+
+var lastSave = 0;
+function updateSaveUI(){
+  var el = document.getElementById('saveIndicator'); if(!el) return;
+  var ago = Date.now() - lastSave;
+  if (ago < 2500) el.textContent = 'Saved';
+  else if (ago < 60000) el.textContent = 'Saved ' + Math.round(ago/1000) + 's ago';
+  else el.textContent = 'Saved';
+}
+setInterval(updateSaveUI, 5000);
+
+var subjects = LS.get(STORAGE_KEY+'_subjects', null);
+var papers   = LS.get(STORAGE_KEY+'_papers', null);
+var filter   = 'all';
+var openSet  = {};
+
+function migrate(){
+  if (!papers) return;
+  Object.keys(papers).forEach(function(sid){
+    papers[sid].forEach(function(p){
+      if (!p.weakTopics) p.weakTopics = [];
+      p.weakTopics = p.weakTopics.map(function(w){ if (typeof w === 'string') return { t:w, priority:false, note:'' }; return w; });
+      if (!p.mistakes) p.mistakes = { careless:0, knowledge:0, time:0, technique:0 };
+      MISTAKE_TYPES.forEach(function(m){ if (p.mistakes[m.id] == null) p.mistakes[m.id] = 0; });
+    });
+  });
+}
+migrate();
+
+function hydrateFromIDB(){
+  Promise.all([idbGet('subjects'), idbGet('papers')]).then(function(r){
+    var localEmpty = !LS.get(STORAGE_KEY+'_subjects', null);
+    if (r[0] && r[1] && localEmpty){
+      subjects = r[0]; papers = r[1]; migrate();
+      LS.set(STORAGE_KEY+'_subjects', subjects);
+      LS.set(STORAGE_KEY+'_papers', papers);
+      renderAll(); toast('Restored from backup');
+    }
+  });
+}
+
+if (!subjects){ subjects = SEED.map(function(s){ return { id:s.id, name:s.name, board:s.board, color:s.color }; }); papers = buildSeed(); LS.set(STORAGE_KEY+'_subjects', subjects); LS.set(STORAGE_KEY+'_papers', papers); }
+
+var saveTimer = null;
+function saveAll(){
+  var ok1 = LS.set(STORAGE_KEY+'_subjects', subjects);
+  var ok2 = LS.set(STORAGE_KEY+'_papers', papers);
+  lastSave = Date.now(); updateSaveUI();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){ idbSet('subjects', subjects); idbSet('papers', papers); }, 300);
+  if(!ok1||!ok2) toast('Storage full — please export', 'err');
+}
+function flushSave(){ try{ LS.set(STORAGE_KEY+'_subjects', subjects); LS.set(STORAGE_KEY+'_papers', papers); idbSet('subjects', subjects); idbSet('papers', papers); }catch(e){} }
+window.addEventListener('pagehide', flushSave);
+window.addEventListener('beforeunload', flushSave);
+window.addEventListener('blur', flushSave);
+document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') flushSave(); });
+openIDB().then(function(db){ idb = db; hydrateFromIDB(); });
+
+// ─── HELPERS ─────────────────────────
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function sIcon(s){ return s==='completed'?'✓':s==='in-progress'?'◐':'○'; }
+function sLabel(s){ return s==='completed'?'Done':s==='in-progress'?'In Progress':'Not Started'; }
+function sClass(s){ return 'badge '+(s==='completed'?'b-dn':s==='in-progress'?'b-ip':'b-ns'); }
+function cycleStatus(s){ return s==='not-started'?'in-progress':s==='in-progress'?'completed':'not-started'; }
+function findPaper(sid, pid){ var sp = papers[sid]||[]; for (var i=0;i<sp.length;i++) if (sp[i].id===pid) return sp[i]; return null; }
+function findSubject(sid){ return subjects.find(function(s){ return s.id===sid; }); }
+
+var toastTimer;
+function toast(msg, type){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type==='err'?' err':'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.className = 'toast'; }, 2600);
+}
+
+function avgScore(subset){
+  var list = subset || subjects;
+  var total = 0, count = 0;
+  list.forEach(function(s){
+    (papers[s.id]||[]).forEach(function(p){
+      if (p.status !== 'completed' || !p.score) return;
+      var n = parseFloat(p.score);
+      if (!isNaN(n)){ total += n; count++; }
+    });
+  });
+  return count ? Math.round(total/count) : null;
+}
+
+function totalMistakes(subset){
+  var list = subset || subjects;
+  var totals = { careless:0, knowledge:0, time:0, technique:0, all:0 };
+  list.forEach(function(s){
+    (papers[s.id]||[]).forEach(function(p){
+      if (!p.mistakes) return;
+      MISTAKE_TYPES.forEach(function(m){
+        var v = p.mistakes[m.id] || 0;
+        totals[m.id] += v;
+        totals.all += v;
+      });
+    });
+  });
+  return totals;
+}
+
+// ─── TABS ────────────────────────────
+function setTab(tab){
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('on', t.getAttribute('data-tab') === tab); });
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('on', p.id === 'panel-'+tab); });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.querySelectorAll('.tab').forEach(function(t){ t.addEventListener('click', function(){ setTab(t.getAttribute('data-tab')); }); });
+
+// ─── RENDER ──────────────────────────
+function renderAll(){ renderStats(); renderOverviewInsights(); renderInsights(); renderCards(); document.getElementById('tabSubCount').textContent = subjects.length; }
+
+function renderStats(){
+  var total=0, done=0, prog=0;
+  subjects.forEach(function(s){
+    var sp = papers[s.id]||[];
+    total += sp.length;
+    sp.forEach(function(p){ if (p.status==='completed') done++; else if (p.status==='in-progress') prog++; });
+  });
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statProg').textContent = prog;
+  var avg = avgScore();
+  document.getElementById('statAvg').textContent = avg != null ? (avg + '%') : '—';
+}
+
+function gatherInsights(){
+  var priorityList = [], topicFreq = {};
+  subjects.forEach(function(s){
+    (papers[s.id]||[]).forEach(function(p){
+      (p.weakTopics||[]).forEach(function(w){
+        if (w.priority){ priorityList.push({ topic: w.t, subject: s.name, color: s.color, paper: p.year+' '+p.paperLabel, sid: s.id, pid: p.id, note: w.note }); }
+        var key = s.id + '|' + w.t;
+        if (!topicFreq[key]) topicFreq[key] = { topic: w.t, subject: s.name, color: s.color, count: 0 };
+        topicFreq[key].count++;
+      });
+    });
+  });
+  var frequent = Object.keys(topicFreq).map(function(k){ return topicFreq[k]; }).filter(function(t){ return t.count >= 2; }).sort(function(a,b){ return b.count - a.count; });
+
+  var ranked = subjects.map(function(s){
+    var sp = papers[s.id]||[];
+    var done = sp.filter(function(p){ return p.status==='completed' && p.score; });
+    if (!done.length) return { s:s, score:null, pct:0 };
+    var totalPct = 0;
+    done.forEach(function(p){ var n = parseFloat(p.score); if (!isNaN(n)) totalPct += n; });
+    var avg = totalPct/done.length;
+    return { s:s, score:avg, pct: Math.round(avg) };
+  });
+  ranked.sort(function(a,b){ if (a.score === null && b.score === null) return 0; if (a.score === null) return 1; if (b.score === null) return -1; return a.score - b.score; });
+
+  return { priorityList: priorityList, frequent: frequent, ranked: ranked };
+}
+
+function renderOverviewInsights(){
+  var ins = gatherInsights();
+  var html = '';
+  if (ins.priorityList.length === 0 && ins.frequent.length === 0 && ins.ranked.every(function(r){ return r.score === null; })){
+    html = '<div class="insight-card"><div class="insight-empty">Start logging scores and tagging weaknesses on your papers — your revision insights will appear here.</div></div>';
+  } else {
+    if (ins.priorityList.length > 0){
+      html += '<div class="insight-card"><div class="insight-head"><h3>Top Priority</h3><span style="font-size:.62rem;color:var(--muted);font-family:var(--mono)">'+ins.priorityList.length+' starred</span></div><div class="priority-list">';
+      ins.priorityList.slice(0, 3).forEach(function(item){
+        html += '<div class="priority-item"><div class="priority-star">★</div><div class="priority-text"><div class="priority-title">'+esc(item.topic)+'</div><div class="priority-meta"><span style="color:'+item.color+'">'+esc(item.subject)+'</span><span class="sep">·</span><span>'+esc(item.paper)+'</span></div></div></div>';
+      });
+      html += '</div></div>';
+    }
+    var weakest = ins.ranked.find(function(r){ return r.score !== null; });
+    if (weakest){
+      html += '<div class="insight-card"><div class="insight-head"><h3>Focus Subject</h3><span style="font-size:.62rem;color:var(--muted);font-family:var(--mono)">lowest avg</span></div><div class="rank-list"><div class="rank-item"><div class="rank-pos">!</div><div class="rank-dot" style="background:'+weakest.s.color+'"></div><div class="rank-name">'+esc(weakest.s.name)+'</div><div class="rank-bar"><div class="rank-bar-fill" style="width:'+weakest.pct+'%;background:'+weakest.s.color+'"></div></div><div class="rank-pct">'+weakest.pct+'%</div></div></div></div>';
+    }
+  }
+  document.getElementById('overviewInsights').innerHTML = html;
+}
+
+function renderInsights(){
+  var ins = gatherInsights();
+  document.getElementById('priorityCount').textContent = ins.priorityList.length + ' starred';
+  var prHtml = '';
+  if (ins.priorityList.length === 0){
+    prHtml = '<div class="insight-empty">No priority topics yet.<br>Tap a weakness on any paper, then "Mark as priority".</div>';
+  } else {
+    prHtml = '<div class="priority-list">';
+    ins.priorityList.forEach(function(item){
+      prHtml += '<div class="priority-item"><div class="priority-star">★</div><div class="priority-text"><div class="priority-title">'+esc(item.topic)+'</div><div class="priority-meta"><span style="color:'+item.color+'">'+esc(item.subject)+'</span><span class="sep">·</span><span>'+esc(item.paper)+'</span>';
+      if (item.note) prHtml += '<span class="sep">·</span><span>📝 '+esc(item.note.slice(0,40))+(item.note.length>40?'…':'')+'</span>';
+      prHtml += '</div></div></div>';
+    });
+    prHtml += '</div>';
+  }
+  document.getElementById('priorityList').innerHTML = prHtml;
+
+  // Subject ranking
+  var rkHtml = '';
+  if (ins.ranked.every(function(r){ return r.score === null; })){
+    rkHtml = '<div class="insight-empty">Complete some papers to see rankings.</div>';
+  } else {
+    rkHtml = '<div class="rank-list">';
+    ins.ranked.forEach(function(r, i){
+      rkHtml += '<div class="rank-item"><div class="rank-pos">'+(i+1)+'</div><div class="rank-dot" style="background:'+r.s.color+'"></div><div class="rank-name">'+esc(r.s.name)+'</div>';
+      if (r.score != null){
+        rkHtml += '<div class="rank-bar"><div class="rank-bar-fill" style="width:'+r.pct+'%;background:'+r.s.color+'"></div></div>';
+        rkHtml += '<div class="rank-pct">'+r.pct+'%</div>';
+      } else {
+        rkHtml += '<div class="rank-bar"><div class="rank-bar-fill" style="width:0;background:'+r.s.color+'"></div></div>';
+        rkHtml += '<div class="rank-pct" style="color:var(--muted)">—</div>';
+      }
+      rkHtml += '</div>';
+    });
+    rkHtml += '</div>';
+  }
+  document.getElementById('rankList').innerHTML = rkHtml;
+
+  // Mistake breakdown
+  var mt = totalMistakes();
+  document.getElementById('mistakeTotal').textContent = mt.all + ' logged';
+  var mbHtml = '';
+  if (mt.all === 0){
+    mbHtml = '<div class="insight-empty">No mistakes logged yet.<br>Open a paper and tap the mistake-type chips to track patterns.</div>';
+  } else {
+    // Overall stacked bar
+    mbHtml += '<div class="mistake-bar"><div class="mistake-bar-track">';
+    MISTAKE_TYPES.forEach(function(m){
+      var pct = (mt[m.id] / mt.all) * 100;
+      if (pct > 0) mbHtml += '<div class="mb-seg mb-'+m.id+'" style="width:'+pct.toFixed(2)+'%" title="'+m.label+': '+mt[m.id]+'"></div>';
+    });
+    mbHtml += '</div></div>';
+    mbHtml += '<div class="mistake-legend">';
+    MISTAKE_TYPES.forEach(function(m){
+      var pct = mt.all ? Math.round((mt[m.id] / mt.all) * 100) : 0;
+      mbHtml += '<span class="mistake-legend-item"><span class="mistake-legend-dot mb-'+m.id+'"></span>'+m.label+' '+mt[m.id]+' ('+pct+'%)</span>';
+    });
+    mbHtml += '</div>';
+
+    // Per-subject breakdown — only show subjects with mistakes
+    var perSubject = subjects.map(function(s){ return { s:s, mt: totalMistakes([s]) }; }).filter(function(x){ return x.mt.all > 0; });
+    if (perSubject.length > 0){
+      mbHtml += '<div style="margin-top:1.1rem;font-size:.6rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">By Subject</div>';
+      perSubject.forEach(function(x){
+        mbHtml += '<div style="margin-bottom:.65rem"><div style="display:flex;align-items:center;gap:.45rem;font-size:.78rem;font-weight:500;margin-bottom:.3rem"><span class="rank-dot" style="background:'+x.s.color+'"></span>'+esc(x.s.name)+'<span style="color:var(--text-3);font-family:var(--mono);font-size:.66rem;margin-left:auto">'+x.mt.all+' total</span></div>';
+        mbHtml += '<div class="mistake-bar-track">';
+        MISTAKE_TYPES.forEach(function(m){
+          var pct = (x.mt[m.id] / x.mt.all) * 100;
+          if (pct > 0) mbHtml += '<div class="mb-seg mb-'+m.id+'" style="width:'+pct.toFixed(2)+'%"></div>';
+        });
+        mbHtml += '</div></div>';
+      });
+    }
+
+    // Diagnosis line — what's the dominant pattern?
+    var topType = MISTAKE_TYPES.slice().sort(function(a,b){ return mt[b.id] - mt[a.id]; })[0];
+    var diagnosis = '';
+    if (topType.id === 'careless') diagnosis = 'Most marks lost to careless mistakes — slow down and check answers.';
+    else if (topType.id === 'knowledge') diagnosis = 'Knowledge gaps dominate — focus revision on weak topics, not just past papers.';
+    else if (topType.id === 'time') diagnosis = 'Running out of time — practice timed papers strictly to build pace.';
+    else if (topType.id === 'technique') diagnosis = 'Exam technique issues — review mark schemes for the language and method examiners reward.';
+    if (mt[topType.id] > 0){
+      mbHtml += '<div style="margin-top:1rem;padding:.75rem .85rem;background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r);font-size:.78rem;line-height:1.5;color:var(--text-2)"><strong style="color:var(--text);font-weight:600">Pattern:</strong> '+esc(diagnosis)+'</div>';
+    }
+  }
+  document.getElementById('mistakeBreakdown').innerHTML = mbHtml;
+
+  // Frequent
+  var fqHtml = '';
+  if (ins.frequent.length === 0){
+    fqHtml = '<div class="insight-empty">No topics tagged across multiple papers yet.</div>';
+  } else {
+    fqHtml = '<div class="priority-list">';
+    ins.frequent.slice(0, 8).forEach(function(item){
+      fqHtml += '<div class="priority-item"><div class="priority-star" style="color:var(--red)">◆</div><div class="priority-text"><div class="priority-title">'+esc(item.topic)+'</div><div class="priority-meta"><span style="color:'+item.color+'">'+esc(item.subject)+'</span></div></div><div class="priority-count">×'+item.count+'</div></div>';
+    });
+    fqHtml += '</div>';
+  }
+  document.getElementById('frequentList').innerHTML = fqHtml;
+}
+
+function renderCards(){
+  var root = document.getElementById('cards');
+  if (!subjects.length){
+    root.innerHTML = '<div class="empty-state"><h3>No subjects yet</h3><p>Get started by adding your first subject.</p><button class="btn btn-primary" onclick="document.getElementById(\'addSubBtn\').click()">+ Add Subject</button></div>';
+    return;
+  }
+  var html = '';
+  subjects.forEach(function(s){
+    var sp = papers[s.id]||[];
+    var total = sp.length;
+    var done = sp.filter(function(p){ return p.status==='completed'; }).length;
+    var pct = total ? Math.round(done/total*100) : 0;
+    var isOpen = !!openSet[s.id];
+    var sAvg = avgScore([s]);
+    var weakN = sp.reduce(function(n,p){ return n + (p.weakTopics?p.weakTopics.length:0); }, 0);
+    var priN = sp.reduce(function(n,p){ return n + (p.weakTopics||[]).filter(function(w){ return w.priority; }).length; }, 0);
+
+    html += '<div class="card'+(isOpen?' open':'')+'">';
+    html += '<div class="card-hdr">';
+    html += '<div class="card-tap" data-action="toggle" data-sid="'+s.id+'">';
+    html += '<div class="card-dot" style="background:'+s.color+'"></div>';
+    html += '<div class="card-info"><div class="card-name">'+esc(s.name)+'</div><div class="card-meta">';
+    html += '<span>'+esc(s.board||'')+'</span>';
+    if (total) html += '<span class="sep">·</span><span>'+total+' papers</span>';
+    if (done) html += '<span class="sep">·</span><span>'+done+' done</span>';
+    if (sAvg != null) html += '<span class="sep">·</span><span>avg '+sAvg+'%</span>';
+    if (weakN) html += '<span class="sep">·</span><span>'+weakN+' weak'+(priN ? ' ('+priN+'★)' : '')+'</span>';
+    html += '</div></div></div>';
+    html += '<div class="card-right">';
+    html += '<div class="ring-pct-text">'+pct+'%</div>';
+    html += '<button class="btn btn-sm" data-action="add-paper" data-sid="'+s.id+'">+</button>';
+    html += '<button class="btn-trash" data-action="delete-subject" data-sid="'+s.id+'" aria-label="Delete">🗑</button>';
+    html += '<div class="chev '+(isOpen?'op':'')+'" data-action="toggle" data-sid="'+s.id+'">▾</div>';
+    html += '</div></div>';
+    html += '<div class="bar-wrap"><div class="bar"><div class="bar-fill" style="width:'+pct+'%;background:'+s.color+'"></div></div></div>';
+
+    if (isOpen){
+      html += '<div class="card-body">';
+      html += '<div class="cs-head">Papers</div>';
+      html += '<div class="papers">';
+      var shown = sp.filter(function(p){ return filter==='all' || p.status===filter; });
+      if (!shown.length){ html += '<div class="empty-hint">No papers'+(filter!=='all'?' matching this filter':'')+'.</div>'; }
+      else { shown.forEach(function(p){ html += renderPaper(s, p); }); }
+      html += '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  root.innerHTML = html;
+}
+
+function renderPaper(s, p){
+  var weak = p.weakTopics||[];
+  var html = '<div class="paper">';
+  html += '<div class="paper-row">';
+  html += '<div class="paper-label"><span class="yr">'+esc(p.year)+'</span><span class="pno">'+esc(p.paperLabel||'Paper')+'</span></div>';
+  html += '<span class="'+sClass(p.status)+'" data-action="cycle-status" data-pid="'+p.id+'" data-sid="'+s.id+'">'+sIcon(p.status)+' '+sLabel(p.status)+'</span>';
+  html += '<div class="score-wrap"><span class="score-lbl">%</span>';
+  html += '<input class="score-in" type="number" inputmode="decimal" min="0" max="100" placeholder="—" value="'+esc(p.score)+'" data-action="score" data-pid="'+p.id+'" data-sid="'+s.id+'">';
+  html += '<button class="btn-trash" data-action="delete-paper" data-pid="'+p.id+'" data-sid="'+s.id+'" aria-label="Delete">🗑</button>';
+  html += '</div></div>';
+
+  // Mistake type chips
+  var mistakes = p.mistakes || { careless:0, knowledge:0, time:0, technique:0 };
+  html += '<div class="mistake-row"><div class="mistake-row-label">Marks lost to</div>';
+  html += '<div class="mistake-chips">';
+  MISTAKE_TYPES.forEach(function(m){
+    var n = mistakes[m.id] || 0;
+    var hasCount = n > 0;
+    html += '<button class="mchip '+m.id+(hasCount?' has-count':'')+'" data-action="mistake-inc" data-pid="'+p.id+'" data-sid="'+s.id+'" data-mtype="'+m.id+'" title="'+esc(m.desc)+' — tap to add, long-press to subtract">';
+    html += '<span class="mchip-icon">'+m.icon+'</span>'+m.label;
+    if (hasCount) html += '<span class="mchip-count">'+n+'</span>';
+    html += '</button>';
+  });
+  html += '</div></div>';
+
+  var priCount = weak.filter(function(w){ return w.priority; }).length;
+  html += '<div class="weak-section">';
+  html += '<div class="weak-head"><h4>Weak topics</h4>';
+  if (weak.length) html += '<span class="weak-count">'+weak.length+(priCount?' · '+priCount+' priority':'')+'</span>';
+  html += '</div>';
+  if (weak.length){
+    html += '<div class="wtags">';
+    weak.forEach(function(w, i){
+      var ttl = w.note ? ' title="'+esc(w.note)+'"' : '';
+      html += '<span class="wtag'+(w.priority?' priority':'')+'"'+ttl+' data-action="weakness-actions" data-pid="'+p.id+'" data-sid="'+s.id+'" data-idx="'+i+'">';
+      html += esc(w.t);
+      if (w.note) html += ' 📝';
+      html += '<button class="wtag-rm" data-action="remove-weak" data-pid="'+p.id+'" data-sid="'+s.id+'" data-idx="'+i+'">×</button>';
+      html += '</span>';
+    });
+    html += '</div>';
+  }
+  html += '<div class="add-wt" data-pid="'+p.id+'" data-sid="'+s.id+'">';
+  html += '<input class="wt-in" type="text" placeholder="Tap to see spec topics, or type…" data-action="weak-input" data-pid="'+p.id+'" data-sid="'+s.id+'" autocomplete="off">';
+  html += '<button class="btn btn-xs btn-danger" data-action="weak-add" data-pid="'+p.id+'" data-sid="'+s.id+'">+</button>';
+  html += '</div></div></div>';
+  return html;
+}
+
+// ─── EVENTS ──────────────────────────
+var cardsEl = document.getElementById('cards');
+
+// Long-press handling for mistake decrement
+var pressTimer = null, longPressed = false;
+cardsEl.addEventListener('pointerdown', function(ev){
+  var btn = ev.target.closest('[data-action="mistake-inc"]');
+  if (!btn) return;
+  longPressed = false;
+  pressTimer = setTimeout(function(){
+    longPressed = true;
+    var sid = btn.getAttribute('data-sid');
+    var pid = btn.getAttribute('data-pid');
+    var type = btn.getAttribute('data-mtype');
+    var p = findPaper(sid, pid);
+    if (p && p.mistakes && p.mistakes[type] > 0){
+      p.mistakes[type]--;
+      saveAll(); renderAll();
+      if (navigator.vibrate) try { navigator.vibrate(10); } catch(e){}
+    }
+  }, 500);
+});
+cardsEl.addEventListener('pointerup', function(){ if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; } });
+cardsEl.addEventListener('pointercancel', function(){ if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; } });
+cardsEl.addEventListener('pointerleave', function(){ if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; } });
+
+cardsEl.addEventListener('click', function(ev){
+  var el = ev.target.closest('[data-action]'); if (!el) return;
+  var action = el.getAttribute('data-action');
+  var sid = el.getAttribute('data-sid');
+  var pid = el.getAttribute('data-pid');
+  if (action === 'toggle'){ openSet[sid] = !openSet[sid]; renderCards(); }
+  else if (action === 'add-paper'){ ev.stopPropagation(); openAddPaperModal(sid); }
+  else if (action === 'delete-subject'){ ev.stopPropagation(); openDeleteModal(sid); }
+  else if (action === 'cycle-status'){ var p = findPaper(sid, pid); if (p){ p.status = cycleStatus(p.status); saveAll(); renderAll(); } }
+  else if (action === 'delete-paper'){ papers[sid] = papers[sid].filter(function(x){ return x.id !== pid; }); saveAll(); renderAll(); }
+  else if (action === 'remove-weak'){ ev.stopPropagation(); var idx = parseInt(el.getAttribute('data-idx')); var p2 = findPaper(sid, pid); if (p2 && p2.weakTopics){ p2.weakTopics.splice(idx, 1); saveAll(); renderAll(); } }
+  else if (action === 'weak-add'){ var input = document.querySelector('.wt-in[data-pid="'+pid+'"]'); if (input) addWeakTopic(sid, pid, input.value); }
+  else if (action === 'weakness-actions'){ var idx2 = parseInt(el.getAttribute('data-idx')); openWeaknessActions(sid, pid, idx2); }
+  else if (action === 'mistake-inc'){
+    if (longPressed){ longPressed = false; return; }
+    var type = el.getAttribute('data-mtype');
+    var p3 = findPaper(sid, pid);
+    if (p3){
+      if (!p3.mistakes) p3.mistakes = { careless:0, knowledge:0, time:0, technique:0 };
+      p3.mistakes[type] = (p3.mistakes[type]||0) + 1;
+      saveAll(); renderAll();
+    }
+  }
+});
+
+cardsEl.addEventListener('keydown', function(ev){ if (ev.target.classList.contains('wt-in') && ev.key === 'Enter'){ ev.preventDefault(); addWeakTopic(ev.target.getAttribute('data-sid'), ev.target.getAttribute('data-pid'), ev.target.value); } });
+cardsEl.addEventListener('input', function(ev){ if (ev.target.classList.contains('wt-in')) showSuggestions(ev.target); });
+cardsEl.addEventListener('focusin', function(ev){ if (ev.target.classList.contains('wt-in')) showSuggestions(ev.target); });
+cardsEl.addEventListener('focusout', function(ev){
+  if (ev.target.classList.contains('wt-in')){ setTimeout(removeSuggestions, 250); }
+  else if (ev.target.classList.contains('score-in')){
+    var sid = ev.target.getAttribute('data-sid');
+    var pid = ev.target.getAttribute('data-pid');
+    var p = findPaper(sid, pid);
+    if (p){ var n = parseFloat(ev.target.value); p.score = !isNaN(n) ? String(Math.max(0, Math.min(100, Math.round(n*10)/10))) : ''; saveAll(); renderAll(); }
+  }
+});
+
+function addWeakTopic(sid, pid, text){
+  var t = (text||'').trim(); if (!t) return;
+  var p = findPaper(sid, pid); if (!p) return;
+  if (!p.weakTopics) p.weakTopics = [];
+  if (p.weakTopics.some(function(w){ return w.t.toLowerCase() === t.toLowerCase(); })){ toast('Already added'); return; }
+  p.weakTopics.push({ t:t, priority:false, note:'' });
+  saveAll(); renderAll();
+}
+
+function showSuggestions(input){
+  removeSuggestions();
+  var val = input.value.toLowerCase().trim();
+  var sid = input.getAttribute('data-sid');
+  var pid = input.getAttribute('data-pid');
+  var subj = findSubject(sid); if (!subj) return;
+  var p = findPaper(sid, pid); if (!p) return;
+  var cfg = BOARDS[subj.board]; if (!cfg || !cfg.topicsByPaper) return;
+  var paperTopics = cfg.topicsByPaper[p.paperId] || [];
+  var existing = (p.weakTopics||[]).map(function(w){ return w.t; });
+  var matches = paperTopics.filter(function(t){
+    if (existing.indexOf(t) !== -1) return false;
+    if (val.length === 0) return true;
+    return t.toLowerCase().indexOf(val) !== -1;
+  }).slice(0, 50);
+  if (!matches.length) return;
+  var wrap = input.parentElement;
+  var sugg = document.createElement('div');
+  sugg.className = 'sugg';
+  sugg.innerHTML = '<div class="sugg-head">'+esc(p.paperLabel)+' — '+matches.length+' topics</div>' + matches.map(function(t){ return '<div class="sugg-item" data-topic="'+esc(t)+'">'+esc(t)+'</div>'; }).join('');
+  wrap.appendChild(sugg);
+  var sy=0, sx=0, moved=false, active=null;
+  sugg.addEventListener('touchstart', function(e){ var item = e.target.closest('.sugg-item'); if (!item) return; sy = e.touches[0].clientY; sx = e.touches[0].clientX; moved = false; active = item; item.classList.add('is-active'); }, { passive:true });
+  sugg.addEventListener('touchmove', function(e){ if (!active) return; var dy = Math.abs(e.touches[0].clientY - sy); var dx = Math.abs(e.touches[0].clientX - sx); if (dy > 8 || dx > 8){ moved = true; active.classList.remove('is-active'); active = null; } }, { passive:true });
+  sugg.addEventListener('touchend', function(e){ if (!active || moved){ if (active) active.classList.remove('is-active'); active = null; return; } var topic = active.getAttribute('data-topic'); active.classList.remove('is-active'); active = null; e.preventDefault(); addWeakTopic(sid, pid, topic); });
+  sugg.addEventListener('touchcancel', function(){ if (active) active.classList.remove('is-active'); active = null; moved = false; });
+  sugg.addEventListener('mousedown', function(e){ e.preventDefault(); });
+  sugg.addEventListener('click', function(e){ var item = e.target.closest('.sugg-item'); if (!item) return; addWeakTopic(sid, pid, item.getAttribute('data-topic')); });
+}
+function removeSuggestions(){ var els = document.querySelectorAll('.sugg'); for (var i=0; i<els.length; i++) if (els[i].parentNode) els[i].parentNode.removeChild(els[i]); }
+
+// Weakness actions
+var wActionCtx = { sid:null, pid:null, idx:-1 };
+function openWeaknessActions(sid, pid, idx){
+  var p = findPaper(sid, pid); if (!p) return;
+  var w = p.weakTopics[idx]; if (!w) return;
+  wActionCtx = { sid:sid, pid:pid, idx:idx };
+  document.getElementById('wActionTitle').textContent = w.t;
+  document.getElementById('wActionSub').textContent = 'What would you like to do?';
+  var list = document.getElementById('wActionList');
+  list.innerHTML =
+    '<button class="action-item" data-act="toggle-priority"><div class="action-icon">'+(w.priority?'☆':'★')+'</div><div class="action-main"><div class="action-title">'+(w.priority?'Remove priority':'Mark as priority')+'</div><div class="action-desc">Flag this as top revision priority</div></div><div class="action-arrow">›</div></button>' +
+    '<button class="action-item" data-act="note"><div class="action-icon">📝</div><div class="action-main"><div class="action-title">'+(w.note?'Edit notes':'Add notes')+'</div><div class="action-desc">'+(w.note?esc(w.note):'Record specific questions or details')+'</div></div><div class="action-arrow">›</div></button>' +
+    '<button class="action-item" data-act="search-google"><div class="action-icon">🔍</div><div class="action-main"><div class="action-title">Search mark schemes</div><div class="action-desc">Open Google with exam board past papers</div></div><div class="action-arrow">↗</div></button>' +
+    '<button class="action-item" data-act="search-videos"><div class="action-icon">🎥</div><div class="action-main"><div class="action-title">Find revision videos</div><div class="action-desc">Open YouTube search for this topic</div></div><div class="action-arrow">↗</div></button>' +
+    '<button class="action-item" data-act="remove" style="color:var(--red)"><div class="action-icon">🗑</div><div class="action-main"><div class="action-title">Remove weakness</div><div class="action-desc">Delete this tag from the paper</div></div><div class="action-arrow">›</div></button>';
+  document.getElementById('wActionOverlay').classList.add('show');
+}
+document.getElementById('wActionList').addEventListener('click', function(ev){
+  var btn = ev.target.closest('[data-act]'); if (!btn) return;
+  var act = btn.getAttribute('data-act');
+  var c = wActionCtx;
+  var p = findPaper(c.sid, c.pid); if (!p || !p.weakTopics[c.idx]) return;
+  var w = p.weakTopics[c.idx];
+  var subj = findSubject(c.sid);
+  if (act === 'toggle-priority'){ w.priority = !w.priority; saveAll(); renderAll(); document.getElementById('wActionOverlay').classList.remove('show'); toast(w.priority ? 'Priority flagged' : 'Priority removed'); }
+  else if (act === 'note'){ document.getElementById('wActionOverlay').classList.remove('show'); openNoteModal(c.sid, c.pid, c.idx); }
+  else if (act === 'search-google'){ var q = encodeURIComponent((subj?subj.board+' ':'') + w.t + ' past paper mark scheme'); window.open('https://www.google.com/search?q=' + q, '_blank'); document.getElementById('wActionOverlay').classList.remove('show'); }
+  else if (act === 'search-videos'){ var qv = encodeURIComponent((subj?subj.board+' ':'') + w.t + ' A-level revision'); window.open('https://www.youtube.com/results?search_query=' + qv, '_blank'); document.getElementById('wActionOverlay').classList.remove('show'); }
+  else if (act === 'remove'){ p.weakTopics.splice(c.idx, 1); saveAll(); renderAll(); document.getElementById('wActionOverlay').classList.remove('show'); }
+});
+document.getElementById('wActionClose').addEventListener('click', function(){ document.getElementById('wActionOverlay').classList.remove('show'); });
+document.getElementById('wActionOverlay').addEventListener('click', function(e){ if (e.target===this) this.classList.remove('show'); });
+
+// Note modal
+var noteCtx = { sid:null, pid:null, idx:-1 };
+function openNoteModal(sid, pid, idx){
+  noteCtx = { sid:sid, pid:pid, idx:idx };
+  var p = findPaper(sid, pid); if (!p) return;
+  var w = p.weakTopics[idx]; if (!w) return;
+  document.getElementById('wNoteSub').textContent = 'About: ' + w.t;
+  document.getElementById('wNoteText').value = w.note || '';
+  document.getElementById('wNoteOverlay').classList.add('show');
+  setTimeout(function(){ document.getElementById('wNoteText').focus(); }, 200);
+}
+document.getElementById('wNoteCancel').addEventListener('click', function(){ document.getElementById('wNoteOverlay').classList.remove('show'); });
+document.getElementById('wNoteSave').addEventListener('click', function(){
+  var p = findPaper(noteCtx.sid, noteCtx.pid); if (!p) return;
+  var w = p.weakTopics[noteCtx.idx]; if (!w) return;
+  w.note = document.getElementById('wNoteText').value.trim();
+  saveAll(); renderAll();
+  document.getElementById('wNoteOverlay').classList.remove('show');
+  toast('Notes saved');
+});
+document.getElementById('wNoteOverlay').addEventListener('click', function(e){ if (e.target===this) this.classList.remove('show'); });
+
+// Filter
+document.querySelectorAll('.fbtn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.fbtn').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    filter = btn.getAttribute('data-f');
+    renderCards();
+  });
+});
+
+// Triple-confirm delete
+var delState = { sid:null, step:0, typedMatch:false };
+function openDeleteModal(sid){ var s = findSubject(sid); if (!s) return; delState.sid = sid; delState.step = 1; delState.typedMatch = false; renderDelStep(); document.getElementById('delOverlay').classList.add('show'); }
+function renderDelStep(){
+  var sid = delState.sid; var s = findSubject(sid); if (!s) return;
+  var count = (papers[sid]||[]).length;
+  document.getElementById('cs1').className = 'step ' + (delState.step >= 1 ? 'on' : '');
+  document.getElementById('cs2').className = 'step ' + (delState.step >= 2 ? 'on' : '');
+  document.getElementById('cs3').className = 'step ' + (delState.step >= 3 ? 'on' : '');
+  var body = document.getElementById('delBody');
+  var btn = document.getElementById('delNext');
+  if (delState.step === 1){
+    document.getElementById('delTitle').textContent = 'Delete Subject?';
+    body.innerHTML = '<div class="confirm-step">You are about to delete <strong>'+esc(s.name)+'</strong> and all '+count+' papers.</div><div class="confirm-hint">Step 1 of 3.</div>';
+    btn.textContent = 'Continue'; btn.disabled = false;
+  }
+  else if (delState.step === 2){
+    document.getElementById('delTitle').textContent = 'Are you sure?';
+    body.innerHTML = '<div class="confirm-step">All scores, weak topics, and mistake data for <strong>'+esc(s.name)+'</strong> will be <strong>permanently erased</strong>. You cannot undo this.</div><div class="confirm-hint">Step 2 of 3.</div>';
+    btn.textContent = 'Yes, continue'; btn.disabled = false;
+  }
+  else {
+    document.getElementById('delTitle').textContent = 'Final confirmation';
+    body.innerHTML = '<div class="confirm-step">Type <strong>'+esc(s.name)+'</strong> below to confirm.</div><input class="confirm-type" id="delType" type="text" placeholder="Type subject name" autocomplete="off" autocapitalize="off"><div class="confirm-hint">Step 3 of 3.</div>';
+    btn.textContent = 'Delete Forever'; btn.disabled = true;
+    setTimeout(function(){
+      var input = document.getElementById('delType'); if (!input) return;
+      input.focus();
+      input.addEventListener('input', function(){ delState.typedMatch = input.value.trim().toLowerCase() === s.name.toLowerCase(); btn.disabled = !delState.typedMatch; });
+    }, 100);
+  }
+}
+document.getElementById('delCancel').addEventListener('click', function(){ document.getElementById('delOverlay').classList.remove('show'); delState = { sid:null, step:0, typedMatch:false }; document.getElementById('delNext').disabled = false; });
+document.getElementById('delOverlay').addEventListener('click', function(e){ if (e.target === this){ this.classList.remove('show'); delState = { sid:null, step:0, typedMatch:false }; document.getElementById('delNext').disabled = false; } });
+document.getElementById('delNext').addEventListener('click', function(){
+  if (delState.step < 3){ delState.step++; renderDelStep(); }
+  else {
+    if (!delState.typedMatch){ toast('Type the subject name to confirm', 'err'); return; }
+    var sid = delState.sid;
+    var name = findSubject(sid).name;
+    subjects = subjects.filter(function(x){ return x.id !== sid; });
+    delete papers[sid]; delete openSet[sid];
+    saveAll(); renderAll();
+    document.getElementById('delOverlay').classList.remove('show');
+    delState = { sid:null, step:0, typedMatch:false };
+    document.getElementById('delNext').disabled = false;
+    toast('Deleted ' + name);
+  }
+});
+
+// Add paper
+var addPaperState = { sid:null, paperId:null, paperLabel:null };
+function openAddPaperModal(sid){
+  var s = findSubject(sid); if (!s) return;
+  addPaperState = { sid:sid, paperId:null, paperLabel:null };
+  document.getElementById('addPaperSub').textContent = 'For ' + s.name;
+  document.getElementById('apYear').value = String(new Date().getFullYear());
+  var cfg = BOARDS[s.board];
+  var div = document.getElementById('apPapers');
+  if (cfg && cfg.papers){
+    div.innerHTML = cfg.papers.map(function(p){ return '<div class="ptype" data-pid="'+p.id+'" data-plabel="'+esc(p.label)+'">'+esc(p.label)+'</div>'; }).join('');
+    div.style.display = 'grid';
+  } else { div.innerHTML = ''; div.style.display = 'none'; }
+  document.getElementById('addPaperOverlay').classList.add('show');
+}
+document.getElementById('apPapers').addEventListener('click', function(e){
+  var el = e.target.closest('.ptype'); if (!el) return;
+  document.querySelectorAll('.ptype').forEach(function(p){ p.classList.remove('sel'); });
+  el.classList.add('sel');
+  addPaperState.paperId = el.getAttribute('data-pid');
+  addPaperState.paperLabel = el.getAttribute('data-plabel');
+});
+document.getElementById('apCancel').addEventListener('click', function(){ document.getElementById('addPaperOverlay').classList.remove('show'); });
+document.getElementById('addPaperOverlay').addEventListener('click', function(e){ if (e.target===this) this.classList.remove('show'); });
+document.getElementById('apSave').addEventListener('click', function(){
+  var year = document.getElementById('apYear').value.trim();
+  if (!year || isNaN(parseInt(year))){ toast('Enter a valid year', 'err'); return; }
+  var sid = addPaperState.sid;
+  var paperId = addPaperState.paperId || ('custom_'+uid());
+  var paperLabel = addPaperState.paperLabel || 'Paper';
+  papers[sid] = papers[sid] || [];
+  papers[sid].push({ id: uid(), year:year, paperId:paperId, paperLabel:paperLabel, status:'not-started', score:'', weakTopics:[], mistakes:{ careless:0, knowledge:0, time:0, technique:0 } });
+  openSet[sid] = true;
+  saveAll(); renderAll();
+  document.getElementById('addPaperOverlay').classList.remove('show');
+  toast('Added ' + year + ' ' + paperLabel);
+});
+
+// Add subject
+var selectedColor = COLORS[0];
+var boardSel = document.getElementById('asBoard');
+BOARD_KEYS.forEach(function(b){ var opt = document.createElement('option'); opt.value = b; opt.textContent = b; boardSel.appendChild(opt); });
+var swDiv = document.getElementById('asSwatches');
+COLORS.forEach(function(c, i){
+  var sw = document.createElement('div');
+  sw.className = 'swatch' + (i===0?' sel':'');
+  sw.style.background = c;
+  sw.addEventListener('click', function(){ document.querySelectorAll('.swatch').forEach(function(x){ x.classList.remove('sel'); }); sw.classList.add('sel'); selectedColor = c; });
+  swDiv.appendChild(sw);
+});
+document.getElementById('addSubBtn').addEventListener('click', function(){
+  document.getElementById('asName').value = '';
+  document.getElementById('asBoard').value = '';
+  document.getElementById('asCustom').value = '';
+  document.getElementById('asCustomField').style.display = 'block';
+  document.getElementById('asFrom').value = '2018';
+  document.getElementById('asTo').value = '2025';
+  selectedColor = COLORS[0];
+  document.querySelectorAll('.swatch').forEach(function(x,i){ x.classList.toggle('sel', i===0); });
+  document.getElementById('addSubOverlay').classList.add('show');
+});
+document.getElementById('asBoard').addEventListener('change', function(){ document.getElementById('asCustomField').style.display = this.value ? 'none' : 'block'; });
+document.getElementById('asCancel').addEventListener('click', function(){ document.getElementById('addSubOverlay').classList.remove('show'); });
+document.getElementById('addSubOverlay').addEventListener('click', function(e){ if (e.target===this) this.classList.remove('show'); });
+document.getElementById('asSave').addEventListener('click', function(){
+  var nameInput = document.getElementById('asName');
+  var name = nameInput.value.trim();
+  if (!name){ nameInput.classList.add('err'); setTimeout(function(){ nameInput.classList.remove('err'); }, 400); return; }
+  var boardVal = document.getElementById('asBoard').value;
+  var customVal = document.getElementById('asCustom').value.trim();
+  var board = boardVal || customVal;
+  var yFrom = parseInt(document.getElementById('asFrom').value) || 0;
+  var yTo = parseInt(document.getElementById('asTo').value) || 0;
+  var id = uid();
+  var cfg = BOARDS[board];
+  var list = [];
+  if (yFrom && yTo){
+    var lo = Math.min(yFrom, yTo), hi = Math.max(yFrom, yTo);
+    for (var y = lo; y <= hi; y++){
+      if (cfg && cfg.papers){
+        cfg.papers.forEach(function(p){ list.push({ id: uid(), year:String(y), paperId:p.id, paperLabel:p.label, status:'not-started', score:'', weakTopics:[], mistakes:{ careless:0, knowledge:0, time:0, technique:0 } }); });
+      }
+    }
+  }
+  subjects.push({ id:id, name:name, board:board, color:selectedColor });
+  papers[id] = list;
+  openSet[id] = true;
+  saveAll(); renderAll();
+  document.getElementById('addSubOverlay').classList.remove('show');
+  toast('Added ' + name + (list.length?' with '+list.length+' papers':''));
+});
+
+// Backup
+document.getElementById('menuBtn').addEventListener('click', function(){ document.getElementById('menuOverlay').classList.add('show'); });
+document.getElementById('menuClose').addEventListener('click', function(){ document.getElementById('menuOverlay').classList.remove('show'); });
+document.getElementById('menuOverlay').addEventListener('click', function(e){ if (e.target===this) this.classList.remove('show'); });
+function buildBackup(){ return { app:'past-paper-tracker', version:8, exportedAt:new Date().toISOString(), subjects:subjects, papers:papers }; }
+function applyBackup(data){
+  if (!data || !data.subjects || !data.papers){ toast('Invalid backup', 'err'); return false; }
+  if (data.app && data.app !== 'past-paper-tracker'){ toast('Not a tracker backup', 'err'); return false; }
+  subjects = data.subjects; papers = data.papers; openSet = {};
+  migrate(); saveAll(); renderAll();
+  toast('Backup restored');
+  document.getElementById('menuOverlay').classList.remove('show');
+  return true;
+}
+document.getElementById('exportBtn').addEventListener('click', function(){
+  try{
+    var json = JSON.stringify(buildBackup(), null, 2);
+    var blob = new Blob([json], { type:'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'paper-tracker-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+    toast('Backup downloaded');
+  }catch(e){ toast('Export failed', 'err'); }
+});
+document.getElementById('copyBtn').addEventListener('click', function(){
+  var json = JSON.stringify(buildBackup());
+  if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(json).then(function(){ toast('Copied to clipboard'); }).catch(function(){ fallbackCopy(json); }); }
+  else fallbackCopy(json);
+});
+function fallbackCopy(t){
+  try{
+    var ta = document.createElement('textarea');
+    ta.value = t; ta.style.position='fixed'; ta.style.top='-9999px';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Copied to clipboard');
+  }catch(e){ toast('Copy failed', 'err'); }
+}
+document.getElementById('importFile').addEventListener('change', function(ev){
+  var file = ev.target.files && ev.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{ var data = JSON.parse(reader.result); if (confirm('Replace current data with this backup?\n\nCurrent: '+subjects.length+' subjects\nBackup: '+(data.subjects?data.subjects.length:0)+' subjects')){ applyBackup(data); } }
+    catch(e){ toast('Invalid backup file', 'err'); }
+    ev.target.value = '';
+  };
+  reader.onerror = function(){ toast('Read failed', 'err'); };
+  reader.readAsText(file);
+});
+document.getElementById('pasteBtn').addEventListener('click', function(){
+  var handler = function(text){ try{ var data = JSON.parse(text); if (confirm('Replace current data with pasted backup?\n\nCurrent: '+subjects.length+' subjects\nPasted: '+(data.subjects?data.subjects.length:0)+' subjects')){ applyBackup(data); } } catch(e){ toast('Invalid clipboard content', 'err'); } };
+  if (navigator.clipboard && navigator.clipboard.readText){ navigator.clipboard.readText().then(handler).catch(function(){ promptPaste(handler); }); }
+  else promptPaste(handler);
+});
+function promptPaste(h){ var t = prompt('Paste backup JSON:'); if (t) h(t); }
+document.getElementById('resetBtn').addEventListener('click', function(){
+  if (!confirm('Reset to default subjects? Your current data will be lost unless backed up.')) return;
+  subjects = SEED.map(function(s){ return { id:s.id, name:s.name, board:s.board, color:s.color }; });
+  papers = buildSeed(); openSet = {};
+  saveAll(); renderAll();
+  document.getElementById('menuOverlay').classList.remove('show');
+  toast('Reset to defaults');
+});
+
+renderAll();
+lastSave = Date.now();
+updateSaveUI();
+
+})();
+
+</script>
+
+</body>
+</html>
